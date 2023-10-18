@@ -1,13 +1,16 @@
-import { PrismaClient } from '@prisma/client';
-import { Store,SessionData } from 'express-session';
-import { SESSION_USER_ID_KEY } from '..';
+import { PrismaClient } from "@prisma/client";
+import { Store, SessionData } from "express-session";
+import { SESSION_USER_ID_KEY } from "..";
 
 export class PrismaSessionStore extends Store {
   constructor(private prisma: PrismaClient) {
     super();
   }
 
-  async get(sid: string, callback: (err?: any, session?: SessionData | null) => void): Promise<void> {
+  async get(
+    sid: string,
+    callback: (err?: any, session?: SessionData | null) => void
+  ): Promise<void> {
     try {
       const session = await this.prisma.session.findUnique({ where: { sid } });
       if (session) {
@@ -20,10 +23,15 @@ export class PrismaSessionStore extends Store {
     }
   }
 
-  async set(sid: string, session: SessionData, callback: (err?: any) => void): Promise<void> {
-    const expiresAt = typeof session.cookie.maxAge === 'number'
-      ? new Date(Date.now() + session.cookie.maxAge)
-      : new Date(Date.now() + 86400 * 1000); // Default to 1 day
+  async set(
+    sid: string,
+    session: SessionData,
+    callback: (err?: any) => void
+  ): Promise<void> {
+    const expiresAt =
+      typeof session.cookie.maxAge === "number"
+        ? new Date(Date.now() + session.cookie.maxAge)
+        : new Date(Date.now() + 86400 * 1000); // Default to 1 day
     const userId = (session as any)[SESSION_USER_ID_KEY] as number | undefined;
 
     try {
@@ -34,8 +42,8 @@ export class PrismaSessionStore extends Store {
           sid,
           data: JSON.stringify(session),
           expires: expiresAt,
-          User: { connect: { id: userId } } 
-        }
+          User: { connect: { id: userId } },
+        },
       });
       callback();
     } catch (err) {

@@ -1,8 +1,7 @@
-import { PrismaClient, User } from '@prisma/client';
+import { SmartAccount, User } from "@prisma/client";
 import prisma from "./Client";
 
 export class UserTable {
-
   public static async createUser(email: string): Promise<User> {
     if (!email) {
       throw new Error("expected non-empty email to create user");
@@ -31,7 +30,9 @@ export class UserTable {
     });
   }
 
-  public static async findUserBySubOrganizationId(subOrganizationId: string): Promise<User> {
+  public static async findUserBySubOrganizationId(
+    subOrganizationId: string
+  ): Promise<User> {
     return await prisma.user.findUniqueOrThrow({
       where: {
         subOrganizationId: subOrganizationId,
@@ -43,7 +44,10 @@ export class UserTable {
     return `wallet-user-${user.email}`;
   }
 
-  public static async updateUserTurnkeySubOrganization(userId: number, subOrganizationId: string): Promise<User> {
+  public static async updateUserTurnkeySubOrganization(
+    userId: number,
+    subOrganizationId: string
+  ): Promise<User> {
     if (!subOrganizationId) {
       throw new Error("cannot update turnkey sub-organization to an empty ID");
     }
@@ -57,4 +61,13 @@ export class UserTable {
       },
     });
   }
+}
+
+export interface SmartUser extends User {
+  createdAt: Date;
+  email: string;
+  id: number;
+  SmartAccount: SmartAccount[];
+  subOrganizationId: string | null;
+  updatedAt: Date;
 }

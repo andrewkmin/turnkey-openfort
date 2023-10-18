@@ -1,31 +1,24 @@
-interface RegistrationRequest {
-    Email: string;
-    Attestation: Attestation;
-    Challenge: string;
+import { TSignedRequest, TurnkeyApiTypes } from "@turnkey/http";
+
+type TAttestation = TurnkeyApiTypes["v1Attestation"];
+
+export interface RegistrationRequest {
+  email: string;
+  attestation: TAttestation;
+  challenge: string;
+  privateKeyName: string;
 }
 
-interface Attestation {
-    CredentialId: string;
-    ClientDataJson: string;
-    AttestationObject: string;
-    Transports: string[];
+export interface AuthenticationRequest {
+  signedWhoamiRequest: TSignedRequest;
 }
 
-interface AuthenticationRequest {
-    SignedWhoamiRequest: SignedTurnkeyRequest;
+export interface SignedTurnkeyRequest {
+  signedTxnRequest: TSignedRequest;
+  transactionIntentId: string;
 }
 
-interface ConstructTxParams {
-    destination: string; 
-    amount: string;
-}
-
-interface SendTxParams {
-    signedSendTx: SignedTurnkeyRequest;
-}
-
-interface SignedTurnkeyRequest {
-    Url: string;
-    Body: string;
-    Stamp: string;
+export interface ConstructTxParams {
+  destination: string;
+  amount: string;
 }

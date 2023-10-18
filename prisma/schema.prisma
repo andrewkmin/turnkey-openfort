@@ -11,13 +11,14 @@ generator client {
 }
 
 model User {
-  id                Int          @id @default(autoincrement())
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  email             String       @unique
-  subOrganizationId String?      @unique
+  id                Int            @id @default(autoincrement())
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  email             String         @unique
+  subOrganizationId String?        @unique
   PrivateKey        PrivateKey[]
   Session           Session[]
+  SmartAccount      SmartAccount[]
 }
 
 model PrivateKey {
@@ -27,7 +28,16 @@ model PrivateKey {
   userID          Int
   turnkeyUUID     String
   ethereumAddress String
-  drops           Int      @default(0)
+  user            User     @relation(fields: [userID], references: [id])
+}
+
+model SmartAccount {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  userID          Int
+  openfortPlayer  String
+  ethereumAddress String
   user            User     @relation(fields: [userID], references: [id])
 }
 
