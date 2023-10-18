@@ -192,7 +192,7 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/authenticate", async (req, res) => {
   try {
     const signedRequest: AuthenticationRequest = req.body;
-    console.log(signedRequest.signedWhoamiRequest.stamp);
+
     const activityResponse = await axios.post(
       signedRequest.signedWhoamiRequest.url,
       JSON.parse(signedRequest.signedWhoamiRequest.body),
@@ -265,7 +265,6 @@ app.post("/api/wallet/send-tx", async (req, res) => {
       return;
     }
     const signedRequest: SignedTurnkeyRequest = req.body;
-    console.log("before axios");
 
     const response = await axios.post(
       signedRequest.signedTxnRequest.url,
@@ -277,18 +276,18 @@ app.post("/api/wallet/send-tx", async (req, res) => {
         },
       }
     );
-    console.log("after axios");
+
     if (response.status !== 200) {
       res.status(500).json({
         message: `expected 200, got ${response.status}`,
       });
     }
-    console.log("response", response);
+
     const responseObj = JSON.parse(response.data.responseBytes.toString());
-    console.log("responseObj", responseObj);
+
     const signedTransaction =
       responseObj.activity?.result?.signTransactionResult?.signedTransaction;
-    console.log("signedTransaction", signedTransaction);
+
     const openfortTxn = await openfort.transactionIntents.signature({
       id: signedRequest.transactionIntentId,
       signature: signedTransaction,
