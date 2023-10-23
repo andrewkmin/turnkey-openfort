@@ -27,10 +27,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@openfort/openfort-node@^0.6.10":
-  version "0.6.10"
-  resolved "https://registry.npmjs.org/@openfort/openfort-node/-/openfort-node-0.6.10.tgz#0bfaea865e681dcbc15921ff53deb7d21aec9385"
-  integrity sha512-kIg1/r5XWrE7Yth0xX3izpmh++WoqYdt/xr18Et6zqfJOkxddX2z4Zp73aCPqBCgonBeENpcsEsBqSDm9cxDWg==
+"@openfort/openfort-node@^0.6.11":
+  version "0.6.12"
+  resolved "https://registry.npmjs.org/@openfort/openfort-node/-/openfort-node-0.6.12.tgz#c1ac1f46c3c68e1b0f5c62f270072e36565b4b37"
+  integrity sha512-ZIJah4ngyb2pgifVmN7s4QAgvzMDVcUO+703R9bWY4EDq1qrPODJ2HjOGlbJVvsZxSv5eRsaQ0i0y2PHSCVUAw==
   dependencies:
     "@types/node" "*"
     "@types/node-fetch" "^2.5.7"

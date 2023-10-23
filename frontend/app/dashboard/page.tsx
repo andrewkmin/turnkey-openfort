@@ -95,10 +95,6 @@ export default function Dashboard() {
     );
 
     if (constructRes.status === 200) {
-      console.log(
-        "Successfully constructed tx: ",
-        constructRes.data["unsignedTransaction"]
-      );
     } else {
       const msg = `Unexpected response: ${constructRes.status}: ${constructRes.data}`;
       console.error(msg);
@@ -121,6 +117,7 @@ export default function Dashboard() {
       },
     };
     const signedRequest = await signSignTransaction(signTransactionInput);
+    console.log("signedRequest", signedRequest);
 
     const sendRes = await axios.post(
       sendTxUrl(),

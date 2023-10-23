@@ -32,8 +32,11 @@ export class PrismaSessionStore extends Store {
       typeof session.cookie.maxAge === "number"
         ? new Date(Date.now() + session.cookie.maxAge)
         : new Date(Date.now() + 86400 * 1000); // Default to 1 day
-    const userId = (session as any)[SESSION_USER_ID_KEY] as number | undefined;
-
+    const userId = (session as any)[SESSION_USER_ID_KEY] as number;
+    if (!userId) {
+      callback(new Error("No userId in session"));
+      return;
+    }
     try {
       await this.prisma.session.upsert({
         where: { sid },
@@ -42,7 +45,7 @@ export class PrismaSessionStore extends Store {
           sid,
           data: JSON.stringify(session),
           expires: expiresAt,
-          User: { connect: { id: userId } },
+          userId: userId
         },
       });
       callback();

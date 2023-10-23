@@ -12,7 +12,7 @@ import {
   SignedTurnkeyRequest,
 } from "./types/requests";
 import { refineNonNull } from "./utils/index";
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 import { PrismaSessionStore } from "./utils/prismaSessionStore";
 import cors from "cors";
 import Openfort, {
@@ -70,8 +70,8 @@ app.use(
 
 turnkeyClient
   .getWhoami({ organizationId: process.env.TURNKEY_ORGANIZATION_ID! })
-  .then((whoami) => {
-    console.log(whoami);
+  .then((whoami: any) => {
+    console.log("Turnkey AUTH", whoami);
   });
 
 // /api/whoami
@@ -193,16 +193,29 @@ app.post("/api/authenticate", async (req, res) => {
   try {
     const signedRequest: AuthenticationRequest = req.body;
 
-    const activityResponse = await axios.post(
-      signedRequest.signedWhoamiRequest.url,
-      JSON.parse(signedRequest.signedWhoamiRequest.body),
-      {
-        headers: {
-          [signedRequest.signedWhoamiRequest.stamp.stampHeaderName]:
-            signedRequest.signedWhoamiRequest.stamp.stampHeaderValue,
-        },
+    let activityResponse;
+    try {
+      activityResponse = await axios.post(
+        signedRequest.signedWhoamiRequest.url,
+        JSON.parse(signedRequest.signedWhoamiRequest.body),
+        {
+          headers: {
+            ["X-Stamp-Webauthn"]: signedRequest.signedWhoamiRequest
+              .stamp as unknown as AxiosHeaders,
+          },
+        }
+      );
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Axios error:",
+          error.response?.data,
+          error.response?.status,
+          error.response?.headers
+        );
       }
-    );
+      throw error; // re-throw the error to be caught by the outer try-catch block
+    }
 
     if (activityResponse.status !== 200) {
       res.status(500).json({
@@ -210,10 +223,7 @@ app.post("/api/authenticate", async (req, res) => {
       });
     }
 
-    const activityId = refineNonNull(activityResponse.data.activity?.id);
-    const subOrgId = refineNonNull(
-      activityResponse.data.activity?.organizationId
-    );
+    const subOrgId = refineNonNull(activityResponse.data.organizationId);
     const user = await UserTable.findUserBySubOrganizationId(subOrgId);
 
     startUserLoginSession(req, user.id);
@@ -266,16 +276,33 @@ app.post("/api/wallet/send-tx", async (req, res) => {
     }
     const signedRequest: SignedTurnkeyRequest = req.body;
 
-    const response = await axios.post(
-      signedRequest.signedTxnRequest.url,
-      JSON.parse(signedRequest.signedTxnRequest.body),
-      {
-        headers: {
-          [signedRequest.signedTxnRequest.stamp.stampHeaderName]:
-            signedRequest.signedTxnRequest.stamp.stampHeaderValue,
-        },
+    if (!signedRequest.signedTxnRequest.stamp) {
+      res.status(422).send("Missint stamps");
+      return;
+    }
+    let response;
+    try {
+      response = await axios.post(
+        signedRequest.signedTxnRequest.url,
+        JSON.parse(signedRequest.signedTxnRequest.body),
+        {
+          headers: {
+            ["X-Stamp-Webauthn"]: signedRequest.signedTxnRequest
+              .stamp as unknown as AxiosHeaders,
+          },
+        }
+      );
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Axios error:",
+          error.response?.data,
+          error.response?.status,
+          error.response?.headers
+        );
       }
-    );
+      throw error; // re-throw the error to be caught by the outer try-catch block
+    }
 
     if (response.status !== 200) {
       res.status(500).json({
@@ -292,9 +319,7 @@ app.post("/api/wallet/send-tx", async (req, res) => {
       id: signedRequest.transactionIntentId,
       signature: signedTransaction,
     });
-    res
-      .status(200)
-      .json({ hash: openfortTxn.response?.logs?.[0]?.transactionHash });
+    res.status(200).json({ hash: openfortTxn.response?.transactionHash });
   } catch (error: unknown) {
     res.status(500).send((error as any).message);
   }

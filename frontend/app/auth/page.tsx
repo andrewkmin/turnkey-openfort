@@ -116,7 +116,6 @@ export default function Auth() {
       },
     };
     const signedWhoamiRequest = await signGetWhoami(whoamiInput);
-
     const res = await axios.post(
       authenticateUrl(),
       {
