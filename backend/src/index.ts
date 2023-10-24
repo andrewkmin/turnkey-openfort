@@ -241,6 +241,12 @@ app.post("/api/wallet/construct-tx", async (req, res) => {
       res.status(403).send("no current user");
       return;
     }
+
+    const privateKey = await getPrivateKeyForUser(user);
+    if (!privateKey) {
+      res.status(403).send("no current private key");
+      return;
+    }
     const interactionMint: Interaction = {
       contract: "con_c00e3daa-14ec-4c9c-8184-f66818fadc78",
       functionName: "mint",
@@ -260,6 +266,8 @@ app.post("/api/wallet/construct-tx", async (req, res) => {
     res.status(200).json({
       unsignedTransaction: transactionIntent.nextAction?.payload.userOpHash,
       transactionIntentId: transactionIntent.id,
+      organizationId: user.subOrganizationId,
+      privateKeyId: privateKey.turnkeyUUID,
     });
   } catch (error: unknown) {
     res.status(500).send((error as any).message);
@@ -292,7 +300,7 @@ app.post("/api/wallet/send-tx", async (req, res) => {
           },
         }
       );
-    } catch (error) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error(
           "Axios error:",
@@ -403,6 +411,10 @@ export function getCurrentUser(req: Request): Promise<SmartUser | null> {
       console.error(`Error while getting current user "${userId}": ${err}`);
       return null;
     });
+}
+
+export function getPrivateKeyForUser(user: SmartUser) {
+  return PrivateKeyTable.getPrivateKeyForUser(user);
 }
 
 export function startUserLoginSession(req: Request, userId: number) {

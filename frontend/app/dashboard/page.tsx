@@ -117,7 +117,6 @@ export default function Dashboard() {
       },
     };
     const signedRequest = await signSignTransaction(signTransactionInput);
-    console.log("signedRequest", signedRequest);
 
     const sendRes = await axios.post(
       sendTxUrl(),
