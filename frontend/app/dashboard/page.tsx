@@ -12,7 +12,9 @@ import {
 } from "@/utils/urls";
 import { browserInit } from "@turnkey/http";
 import {
+  TSignRawPayloadInput,
   TSignTransactionInput,
+  signSignRawPayload,
   signSignTransaction,
 } from "@turnkey/http/dist/__generated__/services/coordinator/public/v1/public_api.fetcher";
 import axios from "axios";
@@ -104,19 +106,20 @@ export default function Dashboard() {
     }
 
     // Now let's sign this!
-    const signTransactionInput: TSignTransactionInput = {
+    const signTransactionInput: TSignRawPayloadInput = {
       body: {
-        type: "ACTIVITY_TYPE_SIGN_TRANSACTION",
+        type: "ACTIVITY_TYPE_SIGN_RAW_PAYLOAD",
         organizationId: constructRes.data["organizationId"],
-        timestampMs: Date.now().toString(),
+        timestampMs: String(Date.now()), // millisecond timestamp
         parameters: {
           privateKeyId: constructRes.data["privateKeyId"],
-          unsignedTransaction: constructRes.data["unsignedTransaction"],
-          type: "TRANSACTION_TYPE_ETHEREUM",
+          payload: constructRes.data["unsignedTransaction"],
+          encoding: "PAYLOAD_ENCODING_HEXADECIMAL",
+          hashFunction: "HASH_FUNCTION_NO_OP",
         },
       },
     };
-    const signedRequest = await signSignTransaction(signTransactionInput);
+    const signedRequest = await signSignRawPayload(signTransactionInput);
 
     const sendRes = await axios.post(
       sendTxUrl(),
