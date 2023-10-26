@@ -20,6 +20,7 @@
     "@turnkey/http": "^1.3.0",
     "axios": "^1.5.1",
     "cors": "^2.8.5",
+    "ethers": "^5.7.2",
     "express": "^4.18.2",
     "express-session": "^1.17.3"
   },

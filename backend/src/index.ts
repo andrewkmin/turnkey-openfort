@@ -20,6 +20,7 @@ import Openfort, {
   Interaction,
 } from "@openfort/openfort-node";
 import { SmartAccountTable } from "./data/smartAccountTable";
+import { ethers } from "ethers";
 
 const prisma = new PrismaClient();
 const SESSION_SALT = "your-session-salt";
@@ -295,7 +296,7 @@ app.post("/api/wallet/send-tx", async (req, res) => {
         JSON.parse(signedRequest.signedTxnRequest.body),
         {
           headers: {
-            ["X-Stamp-Webauthn"]: signedRequest.signedTxnRequest
+            ["X-Stamp-WebAuthn"]: signedRequest.signedTxnRequest
               .stamp as unknown as AxiosHeaders,
           },
         }
@@ -318,15 +319,19 @@ app.post("/api/wallet/send-tx", async (req, res) => {
       });
     }
 
-    const responseObj = JSON.parse(response.data.responseBytes.toString());
+    const result = response?.data?.activity?.result?.signRawPayloadResult;
 
-    const signedTransaction =
-      responseObj.activity?.result?.signTransactionResult?.signedTransaction;
+    const signature = ethers.utils.joinSignature({
+      r: `0x${result.r}`,
+      s: `0x${result.s}`,
+      v: parseInt(result.v) + 27,
+    });
 
     const openfortTxn = await openfort.transactionIntents.signature({
       id: signedRequest.transactionIntentId,
-      signature: signedTransaction,
+      signature,
     });
+
     res.status(200).json({ hash: openfortTxn.response?.transactionHash });
   } catch (error: unknown) {
     res.status(500).send((error as any).message);
